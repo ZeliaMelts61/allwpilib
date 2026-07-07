@@ -10,6 +10,8 @@
 #include <string>
 
 #include "wpi/net/raw_uv_ostream.hpp"
+#include "wpi/hal/simulation/AddressableLEDData.h"
+//#include "wpi/hal/AddressableLEDTypes.h"
 
 #define XRP_TAG_MOTOR 0x12
 #define XRP_TAG_SERVO 0x13
@@ -18,6 +20,7 @@
 #define XRP_TAG_GYRO 0x16
 #define XRP_TAG_ACCEL 0x17
 #define XRP_TAG_ENCODER 0x18
+#define XRP_TAG_LED 0x19
 
 namespace wpi::util {
 class json;
@@ -46,6 +49,7 @@ class XRP {
   void SetupMotorTag(wpi::net::raw_uv_ostream& buf);
   void SetupServoTag(wpi::net::raw_uv_ostream& buf);
   void SetupDigitalOutTag(wpi::net::raw_uv_ostream& buf);
+  void SetupLedTag(wpi::net::raw_uv_ostream& buf);
 
   // WPILib Sim Update Handlers
   void HandleDriverStationSimValueChanged(const wpi::util::json& data);

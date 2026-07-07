@@ -104,6 +104,7 @@ void XRP::SetupXRPSendBuffer(wpi::net::raw_uv_ostream& buf) {
   SetupMotorTag(buf);
   SetupServoTag(buf);
   SetupDigitalOutTag(buf);
+  SetupLedTag(buf);
   m_xrp_bound_seq++;
 }
 
@@ -322,6 +323,27 @@ void XRP::SetupDigitalOutTag(wpi::net::raw_uv_ostream& buf) {
         << static_cast<uint8_t>(XRP_TAG_DIO)                 // Tag
         << static_cast<uint8_t>(digitalOut.first)            // Channel
         << static_cast<uint8_t>(digitalOut.second ? 1 : 0);  // Value
+  }
+}
+
+void XRP::SetupLedTag(wpi::net::raw_uv_ostream& buf) {
+  int start = HALSIM_GetAddressableLEDStart(0);
+  int count = HALSIM_GetAddressableLEDLength(0);
+
+  if (count <= 0) {
+    return;
+  }
+
+  std::vector<HAL_AddressableLEDData> leds(count);
+
+  HALSIM_GetAddressableLEDData(start, count, leds.data());
+
+  buf << static_cast<uint8_t>(2 + count * 3)  // Size
+      << static_cast<uint8_t>(XRP_TAG_LED)    // Tag
+      << static_cast<uint8_t>(count);         // Number of leds
+
+  for (const auto& led : leds) {
+    buf << led.r << led.g << led.b;           // Led buffer
   }
 }
 
