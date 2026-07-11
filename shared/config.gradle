@@ -5,8 +5,8 @@ if (project.hasProperty('ciDebugOnly')) {
 }
 
 nativeUtils.addWpiNativeUtils()
-nativeUtils.withCrossLinuxArm64()
-nativeUtils.withCrossSystemCore()
+//nativeUtils.withCrossLinuxArm64()
+//nativeUtils.withCrossSystemCore()
 nativeUtils {
     wpi {
         configureDependencies {
@@ -182,6 +182,9 @@ ext.includeStandardZipFormat = { task, value ->
     value.each { binary ->
         if (binary.buildable) {
             if (binary instanceof SharedLibraryBinarySpec) {
+                // println "Component: ${binary.component.name}"
+                // println "Runtime: ${binary.runtimeFiles}"
+                // println "Shared: ${binary.sharedLibraryFile}"
                 task.dependsOn binary.tasks.link
                 task.from(new File(binary.sharedLibraryFile.absolutePath + ".debug")) {
                     into nativeUtils.getPlatformPath(binary) + '/shared'
