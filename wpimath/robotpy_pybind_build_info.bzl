@@ -1099,6 +1099,26 @@ def wpimath_extension(srcs = [], header_to_dat_deps = [], extra_hdrs = [], inclu
             ],
         ),
         struct(
+            class_name = "DrivetrainSplineTrajectoryGenerator",
+            yml_file = "semiwrap/DrivetrainSplineTrajectoryGenerator.yml",
+            header_root = "$(execpath :robotpy-native-wpimath.copy_headers)",
+            header_file = "$(execpath :robotpy-native-wpimath.copy_headers)/wpi/math/trajectory/DrivetrainSplineTrajectoryGenerator.hpp",
+            tmpl_class_names = [],
+            trampolines = [
+                ("wpi::math::DrivetrainSplineTrajectoryGenerator", "wpi__math__DrivetrainSplineTrajectoryGenerator.hpp"),
+            ],
+        ),
+        struct(
+            class_name = "DrivetrainSplineTrajectoryParameterizer",
+            yml_file = "semiwrap/DrivetrainSplineTrajectoryParameterizer.yml",
+            header_root = "$(execpath :robotpy-native-wpimath.copy_headers)",
+            header_file = "$(execpath :robotpy-native-wpimath.copy_headers)/wpi/math/trajectory/DrivetrainSplineTrajectoryParameterizer.hpp",
+            tmpl_class_names = [],
+            trampolines = [
+                ("wpi::math::DrivetrainSplineTrajectoryParameterizer", "wpi__math__DrivetrainSplineTrajectoryParameterizer.hpp"),
+            ],
+        ),
+        struct(
             class_name = "ExponentialProfile",
             yml_file = "semiwrap/ExponentialProfile.yml",
             header_root = "$(execpath :robotpy-native-wpimath.copy_headers)",
@@ -1158,26 +1178,6 @@ def wpimath_extension(srcs = [], header_to_dat_deps = [], extra_hdrs = [], inclu
             ],
         ),
         struct(
-            class_name = "TrajectoryGenerator",
-            yml_file = "semiwrap/TrajectoryGenerator.yml",
-            header_root = "$(execpath :robotpy-native-wpimath.copy_headers)",
-            header_file = "$(execpath :robotpy-native-wpimath.copy_headers)/wpi/math/trajectory/TrajectoryGenerator.hpp",
-            tmpl_class_names = [],
-            trampolines = [
-                ("wpi::math::TrajectoryGenerator", "wpi__math__TrajectoryGenerator.hpp"),
-            ],
-        ),
-        struct(
-            class_name = "TrajectoryParameterizer",
-            yml_file = "semiwrap/TrajectoryParameterizer.yml",
-            header_root = "$(execpath :robotpy-native-wpimath.copy_headers)",
-            header_file = "$(execpath :robotpy-native-wpimath.copy_headers)/wpi/math/trajectory/TrajectoryParameterizer.hpp",
-            tmpl_class_names = [],
-            trampolines = [
-                ("wpi::math::TrajectoryParameterizer", "wpi__math__TrajectoryParameterizer.hpp"),
-            ],
-        ),
-        struct(
             class_name = "TrajectorySample",
             yml_file = "semiwrap/TrajectorySample.yml",
             header_root = "$(execpath :robotpy-native-wpimath.copy_headers)",
@@ -1200,6 +1200,7 @@ def wpimath_extension(srcs = [], header_to_dat_deps = [], extra_hdrs = [], inclu
                 ("wpi::math::TrapezoidProfile", "wpi__math__TrapezoidProfile.hpp"),
                 ("wpi::math::TrapezoidProfile::Constraints", "wpi__math__TrapezoidProfile__Constraints.hpp"),
                 ("wpi::math::TrapezoidProfile::State", "wpi__math__TrapezoidProfile__State.hpp"),
+                ("wpi::math::TrapezoidProfile::ProfileTiming", "wpi__math__TrapezoidProfile__ProfileTiming.hpp"),
             ],
         ),
         struct(
