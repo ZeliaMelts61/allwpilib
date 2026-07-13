@@ -38,17 +38,6 @@ apply from: "${rootDir}/shared/jni/setupBuild.gradle"
 
 apply from: "${rootDir}/shared/libmrclib.gradle"
 
-afterEvaluate {
-    tasks.withType(Zip).configureEach { zip ->
-        if (zip.name.contains("hal")) {
-            zip.from(layout.projectDirectory.file(
-                "hal/build/install/halDev/lib/MrcLib.dll"
-            )) {
-                into "windowsx86-64/shared"
-            }
-        }
-    }
-}
 
 ext {
     addHalDependency = { binary, shared->
