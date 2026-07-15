@@ -421,7 +421,7 @@ void XRP::ReadEncoderTag(std::span<const uint8_t> packet) {
   wpi::util::json encJson;
   encJson["type"] = "Encoder";
   encJson["device"] = std::to_string(wpilibEncoderChannel);
-  encJson["data"] = wpi::util::json::object(">count", count);
+  encJson["data"][">count"] = count;
 
   if (containsPeriod) {
     // Older versions of XRP firmware do not provide Encoder Period.
@@ -448,7 +448,7 @@ void XRP::ReadEncoderTag(std::span<const uint8_t> packet) {
       period = -period;
     }
 
-    encJson["data"].emplace_back(wpi::util::json::object(">period", period));
+    encJson["data"][">period"] = period;
   }
 
   m_wpilib_update_func(encJson);
