@@ -10,6 +10,7 @@
 
 #include "wpi/util/Endian.hpp"
 #include "wpi/util/json.hpp"
+#include <cstdio>
 
 using namespace wpilibxrp;
 
@@ -327,17 +328,17 @@ void XRP::SetupDigitalOutTag(wpi::net::raw_uv_ostream& buf) {
 }
 
 void XRP::SetupLedTag(wpi::net::raw_uv_ostream& buf) {
-  int start = HALSIM_GetAddressableLEDStart(0);
-  int count = HALSIM_GetAddressableLEDLength(0);
-
+  int start = HALSIM_GetAddressableLEDStart(5);
+  int count = HALSIM_GetAddressableLEDLength(5);
   if (count <= 0) {
     return;
   }
 
   std::vector<HAL_AddressableLEDData> leds(count);
-
+  
+  
   HALSIM_GetAddressableLEDData(start, count, leds.data());
-
+  std::string buf2 = ""; 
   buf << static_cast<uint8_t>(2 + count * 3)  // Size
       << static_cast<uint8_t>(XRP_TAG_LED)    // Tag
       << static_cast<uint8_t>(count);         // Number of leds
