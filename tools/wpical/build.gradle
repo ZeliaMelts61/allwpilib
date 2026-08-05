@@ -1,20 +1,20 @@
-// import org.gradle.internal.os.OperatingSystem
+import org.gradle.internal.os.OperatingSystem
 
-// if (project.hasProperty('onlylinuxsystemcore')) {
-//     return;
-// }
+if (project.hasProperty('onlylinuxsystemcore')) {
+    return;
+}
 
-// description = "Field Calibration Tool"
+description = "Field Calibration Tool"
 
-// apply plugin: 'c'
-// apply plugin: 'cpp'
-// apply plugin: 'visual-studio'
-// apply plugin: 'google-test-test-suite'
-// apply plugin: 'org.wpilib.NativeUtils'
+apply plugin: 'c'
+apply plugin: 'cpp'
+apply plugin: 'visual-studio'
+apply plugin: 'google-test-test-suite'
+apply plugin: 'org.wpilib.NativeUtils'
 
-// if (OperatingSystem.current().isWindows()) {
-//     apply plugin: 'windows-resources'
-// }
+if (OperatingSystem.current().isWindows()) {
+    apply plugin: 'windows-resources'
+}
 
 ext {
     nativeName = 'wpical'
@@ -25,34 +25,34 @@ ext {
         (nativeTestSuiteName): []]
 }
 
-// apply from: "${rootDir}/shared/resources.gradle"
-// apply from: "${rootDir}/shared/config.gradle"
+apply from: "${rootDir}/shared/resources.gradle"
+apply from: "${rootDir}/shared/config.gradle"
 
 def wpilibVersionFileInput = file("src/main/generate/WPILibVersion.cpp.in")
 def wpilibVersionFileOutput = file("$buildDir/generated/mainVersion/cpp/WPILibVersion.cpp")
 
-// apply from: "${rootDir}/shared/ceres.gradle"
-// apply from: "${rootDir}/shared/opencv.gradle"
+apply from: "${rootDir}/shared/ceres.gradle"
+apply from: "${rootDir}/shared/opencv.gradle"
 
-// task generateCppVersion() {
-//     description = 'Generates the wpilib version class'
-//     group = 'WPILib'
+task generateCppVersion() {
+    description = 'Generates the wpilib version class'
+    group = 'WPILib'
 
-//     outputs.file wpilibVersionFileOutput
-//     inputs.file wpilibVersionFileInput
+    outputs.file wpilibVersionFileOutput
+    inputs.file wpilibVersionFileInput
 
-//     if (wpilibVersioning.releaseMode) {
-//         outputs.upToDateWhen { false }
-//     }
+    if (wpilibVersioning.releaseMode) {
+        outputs.upToDateWhen { false }
+    }
 
-//     // We follow a simple set of checks to determine whether we should generate a new version file:
-//     // 1. If the release type is not development, we generate a new version file
-//     // 2. If there is no generated version number, we generate a new version file
-//     // 3. If there is a generated build number, and the release type is development, then we will
-//     //    only generate if the publish task is run.
-//     doLast {
-//         def version = wpilibVersioning.version.get()
-//         println "Writing version ${version} to $wpilibVersionFileOutput"
+    // We follow a simple set of checks to determine whether we should generate a new version file:
+    // 1. If the release type is not development, we generate a new version file
+    // 2. If there is no generated version number, we generate a new version file
+    // 3. If there is a generated build number, and the release type is development, then we will
+    //    only generate if the publish task is run.
+    doLast {
+        def version = wpilibVersioning.version.get()
+        println "Writing version ${version} to $wpilibVersionFileOutput"
 
         wpilibVersionFileOutput.parentFile.mkdirs()
         if (wpilibVersionFileOutput.exists()) {
@@ -63,14 +63,14 @@ def wpilibVersionFileOutput = file("$buildDir/generated/mainVersion/cpp/WPILibVe
     }
 }
 
-// gradle.taskGraph.addTaskExecutionGraphListener { graph ->
-//     def willPublish = graph.hasTask(publish)
-//     if (willPublish) {
-//         generateCppVersion.outputs.upToDateWhen { false }
-//     }
-// }
+gradle.taskGraph.addTaskExecutionGraphListener { graph ->
+    def willPublish = graph.hasTask(publish)
+    if (willPublish) {
+        generateCppVersion.outputs.upToDateWhen { false }
+    }
+}
 
-// def generateTask = createGenerateResourcesTask('main', 'WPIcal', 'wpical', project)
+def generateTask = createGenerateResourcesTask('main', 'WPIcal', 'wpical', project)
 
 project(':').libraryBuild.dependsOn build
 tasks.withType(CppCompile).configureEach {
@@ -78,42 +78,42 @@ tasks.withType(CppCompile).configureEach {
     dependsOn generateCppVersion
 }
 
-// // Suppress warnings
-// nativeUtils.platformConfigs.each {
-//     if (it.name.contains('windows')) {
-//         it.cCompiler.args.add("/wd4047")
-//         it.cCompiler.args.add("/wd4098")
-//         it.cCompiler.args.add("/wd4267")
+// Suppress warnings
+nativeUtils.platformConfigs.each {
+    if (it.name.contains('windows')) {
+        it.cCompiler.args.add("/wd4047")
+        it.cCompiler.args.add("/wd4098")
+        it.cCompiler.args.add("/wd4267")
 
-//         it.cppCompiler.args.add("/wd4068")
-//         it.cppCompiler.args.add("/wd4101")
-//         it.cppCompiler.args.add("/wd4200")
-//         it.cppCompiler.args.add("/wd4576")
-//         it.cppCompiler.args.add("/wd4715")
-//     } else if (it.name.contains('osx')) {
-//         it.cCompiler.args.remove("-pedantic")
-//         it.cCompiler.args.add("-Wno-format-nonliteral")
-//         it.cCompiler.args.add("-Wno-sign-compare")
-//         it.cCompiler.args.add("-Wno-unused-function")
-//         it.cCompiler.args.add("-Wno-unused-variable")
+        it.cppCompiler.args.add("/wd4068")
+        it.cppCompiler.args.add("/wd4101")
+        it.cppCompiler.args.add("/wd4200")
+        it.cppCompiler.args.add("/wd4576")
+        it.cppCompiler.args.add("/wd4715")
+    } else if (it.name.contains('osx')) {
+        it.cCompiler.args.remove("-pedantic")
+        it.cCompiler.args.add("-Wno-format-nonliteral")
+        it.cCompiler.args.add("-Wno-sign-compare")
+        it.cCompiler.args.add("-Wno-unused-function")
+        it.cCompiler.args.add("-Wno-unused-variable")
 
-//         it.cppCompiler.args.remove("-pedantic")
-//         it.cppCompiler.args.remove("-permissive")
-//         it.cppCompiler.args.add("-fpermissive")
-//         it.cppCompiler.args.add("-Wno-missing-field-initializers")
-//         it.cppCompiler.args.add("-Wno-deprecated-declarations")
-//         it.cppCompiler.args.add("-Wno-missing-braces")
-//         it.cppCompiler.args.add("-Wno-null-conversion")
-//         it.cppCompiler.args.add("-Wno-sign-compare")
-//         it.cppCompiler.args.add("-Wno-unused-but-set-variable")
-//         it.cppCompiler.args.add("-Wno-unused-function")
-//         it.cppCompiler.args.add("-Wno-unused-variable")
-//     } else {
-//         it.cCompiler.args.remove("-pedantic")
-//         it.cCompiler.args.add("-Wno-format-nonliteral")
-//         it.cCompiler.args.add("-Wno-sign-compare")
-//         it.cCompiler.args.add("-Wno-unused-function")
-//         it.cCompiler.args.add("-Wno-unused-variable")
+        it.cppCompiler.args.remove("-pedantic")
+        it.cppCompiler.args.remove("-permissive")
+        it.cppCompiler.args.add("-fpermissive")
+        it.cppCompiler.args.add("-Wno-missing-field-initializers")
+        it.cppCompiler.args.add("-Wno-deprecated-declarations")
+        it.cppCompiler.args.add("-Wno-missing-braces")
+        it.cppCompiler.args.add("-Wno-null-conversion")
+        it.cppCompiler.args.add("-Wno-sign-compare")
+        it.cppCompiler.args.add("-Wno-unused-but-set-variable")
+        it.cppCompiler.args.add("-Wno-unused-function")
+        it.cppCompiler.args.add("-Wno-unused-variable")
+    } else {
+        it.cCompiler.args.remove("-pedantic")
+        it.cCompiler.args.add("-Wno-format-nonliteral")
+        it.cCompiler.args.add("-Wno-sign-compare")
+        it.cCompiler.args.add("-Wno-unused-function")
+        it.cCompiler.args.add("-Wno-unused-variable")
 
         it.cppCompiler.args.remove("-pedantic")
         it.cppCompiler.args.remove("-permissive")
