@@ -16,20 +16,20 @@
 //     apply plugin: 'windows-resources'
 // }
 
-// ext {
-//     nativeName = 'wpical'
-//     useCpp = true
-//     nativeTestSuiteName = "${nativeName}Catch2Test"
-//     sharedCvConfigs = [
-//         (nativeTestSuiteName): []]
-//     staticCvConfigs = []
-// }
+ext {
+    nativeName = 'wpical'
+    useCpp = true
+    nativeTestSuiteName = "${nativeName}Catch2Test"
+    sharedCvConfigs = []
+    staticCvConfigs = [ (nativeName): [],
+        (nativeTestSuiteName): []]
+}
 
 // apply from: "${rootDir}/shared/resources.gradle"
 // apply from: "${rootDir}/shared/config.gradle"
 
-// def wpilibVersionFileInput = file("src/main/generate/WPILibVersion.cpp.in")
-// def wpilibVersionFileOutput = file("$buildDir/generated/main/cpp/WPILibVersion.cpp")
+def wpilibVersionFileInput = file("src/main/generate/WPILibVersion.cpp.in")
+def wpilibVersionFileOutput = file("$buildDir/generated/mainVersion/cpp/WPILibVersion.cpp")
 
 // apply from: "${rootDir}/shared/ceres.gradle"
 // apply from: "${rootDir}/shared/opencv.gradle"
@@ -54,13 +54,14 @@
 //         def version = wpilibVersioning.version.get()
 //         println "Writing version ${version} to $wpilibVersionFileOutput"
 
-//         if (wpilibVersionFileOutput.exists()) {
-//             wpilibVersionFileOutput.delete()
-//         }
-//         def read = wpilibVersionFileInput.text.replace('${wpilib_version}', version)
-//         wpilibVersionFileOutput.write(read)
-//     }
-// }
+        wpilibVersionFileOutput.parentFile.mkdirs()
+        if (wpilibVersionFileOutput.exists()) {
+            wpilibVersionFileOutput.delete()
+        }
+        def read = wpilibVersionFileInput.text.replace('${wpilib_version}', version)
+        wpilibVersionFileOutput.write(read)
+    }
+}
 
 // gradle.taskGraph.addTaskExecutionGraphListener { graph ->
 //     def willPublish = graph.hasTask(publish)
@@ -71,11 +72,11 @@
 
 // def generateTask = createGenerateResourcesTask('main', 'WPIcal', 'wpical', project)
 
-// project(':').libraryBuild.dependsOn build
-// tasks.withType(CppCompile) {
-//     dependsOn generateTask
-//     dependsOn generateCppVersion
-// }
+project(':').libraryBuild.dependsOn build
+tasks.withType(CppCompile).configureEach {
+    dependsOn generateTask
+    dependsOn generateCppVersion
+}
 
 // // Suppress warnings
 // nativeUtils.platformConfigs.each {
@@ -114,149 +115,140 @@
 //         it.cCompiler.args.add("-Wno-unused-function")
 //         it.cCompiler.args.add("-Wno-unused-variable")
 
-//         it.cppCompiler.args.remove("-pedantic")
-//         it.cppCompiler.args.remove("-permissive")
-//         it.cppCompiler.args.add("-fpermissive")
-//         it.cppCompiler.args.add("-Wno-deprecated-declarations")
-//         it.cppCompiler.args.add("-Wno-deprecated-enum-enum-conversion")
-//         it.cppCompiler.args.add("-Wno-missing-field-initializers")
-//         it.cppCompiler.args.add("-Wno-sign-compare")
-//         it.cppCompiler.args.add("-Wno-unused-function")
-//         it.cppCompiler.args.add("-Wno-unused-variable")
-//     }
-// }
-// def testResources = "\"$rootDir/tools/wpical/src/main/native/assets\"".replace("\\", "/")
-// model {
-//     components {
-//         "${nativeName}"(NativeExecutableSpec) {
-//             baseName = 'wpical'
-//             sources {
-//                 cpp {
-//                     source {
-//                         srcDirs 'src/main/native/cpp', 'src/main/native/thirdparty/libdogleg/src', 'src/main/native/thirdparty/mrcal/src', 'src/main/native/thirdparty/mrcal_java/src', "$buildDir/generated/main/cpp"
-//                         include '**/*.cpp'
-//                     }
-//                     exportedHeaders {
-//                         srcDirs 'src/main/native/include', 'src/main/native/thirdparty/libdogleg/include', 'src/main/native/thirdparty/mrcal/generated', 'src/main/native/thirdparty/mrcal/include', 'src/main/native/thirdparty/mrcal/include/minimath', 'src/main/native/thirdparty/mrcal_java/include'
-//                     }
-//                 }
-//                 c {
-//                     source {
-//                         srcDirs 'src/main/native/thirdparty/mrcal/src'
-//                         include '**/*.c'
-//                     }
-//                     exportedHeaders {
-//                         srcDirs 'src/main/native/include', 'src/main/native/thirdparty/libdogleg/include', 'src/main/native/thirdparty/mrcal/generated', 'src/main/native/thirdparty/mrcal/include', 'src/main/native/thirdparty/mrcal/include/minimath'
-//                     }
-//                 }
-//                 if (OperatingSystem.current().isWindows()) {
-//                     rc.source {
-//                         srcDirs 'src/main/native/win'
-//                         include '*.rc'
-//                     }
-//                 }
-//             }
-//             binaries.all {
-//                 if (it.targetPlatform.name == nativeUtils.wpi.platforms.systemcore) {
-//                     it.buildable = false
-//                     return
-//                 }
-//                 lib project: ':apriltag', library: 'apriltag', linkage: 'static'
-//                 lib project: ':fields', library: 'fields', linkage: 'static'
-//                 lib project: ':glass', library: 'glass', linkage: 'static'
-//                 lib project: ':wpimath', library: 'wpimath', linkage: 'static'
-//                 lib project: ':wpigui', library: 'wpigui', linkage: 'static'
-//                 lib project: ':thirdparty:imgui_suite', library: 'imguiSuite', linkage: 'static'
-//                 lib project: ':wpiutil', library: 'wpiutil', linkage: 'static'
-//                 nativeUtils.useRequiredLibrary(it, 'ceres')
-//                 nativeUtils.useRequiredLibrary(it, 'opencv_static')
-//                 it.cppCompiler.define 'OPENCV_DISABLE_EIGEN_TENSOR_SUPPORT'
-//                 it.cppCompiler.define 'GLOG_USE_GLOG_EXPORT'
-//                 if (it.targetPlatform.operatingSystem.isWindows()) {
-//                     it.cppCompiler.define('GLOG_DEPRECATED', '__declspec(deprecated)')
-//                 } else {
-//                     it.cppCompiler.define('GLOG_DEPRECATED', '[[deprecated]]')
-//                 }
-//                 if (it.targetPlatform.operatingSystem.isWindows()) {
-//                     // Comdlg32.lib is needed for GetSaveFileNameA
-//                     // dbghelp.lib is needed for glog functions
-//                     it.linker.args << 'Gdi32.lib' << 'Shell32.lib' << 'd3d11.lib' << 'd3dcompiler.lib' << 'Comdlg32.lib' << 'dbghelp.lib'
-//                 } else if (it.targetPlatform.operatingSystem.isMacOsX()) {
-//                     it.linker.args << '-framework' << 'Metal' << '-framework' << 'MetalKit' << '-framework' << 'Cocoa' << '-framework' << 'IOKit' << '-framework' << 'CoreFoundation' << '-framework' << 'CoreVideo' << '-framework' << 'QuartzCore' << '-framework' << 'Accelerate'
-//                 } else {
-//                     it.linker.args << '-lX11'
-//                     if (it.targetPlatform.name.startsWith('linuxarm')) {
-//                         it.linker.args << '-lGL'
-//                     }
-//                 }
-//             }
-//         }
-//     }
-//     testSuites {
-//         "${nativeTestSuiteName}"(GoogleTestTestSuiteSpec) {
-//             for(NativeComponentSpec c : $.components) {
-//                 if (c.name == nativeName) {
-//                     testing c
-//                     break
-//                 }
-//             }
-//             sources {
-//                 cpp {
-//                     source {
-//                         srcDirs 'src/test/native/cpp'
-//                         include '**/*.cpp'
-//                     }
-//                     exportedHeaders {
-//                         srcDirs 'src/test/native/include', 'src/main/native/cpp'
-//                     }
-//                 }
-//             }
-//             binaries.all {
-//                 if (it.targetPlatform.name == nativeUtils.wpi.platforms.systemcore) {
-//                     it.buildable = false
-//                     return
-//                 }
-//                 lib project: ':apriltag', library: 'apriltag', linkage: 'static'
-//                 lib project: ':fields', library: 'fields', linkage: 'static'
-//                 lib project: ':glass', library: 'glass', linkage: 'static'
-//                 lib project: ':wpimath', library: 'wpimath', linkage: 'static'
-//                 lib project: ':wpigui', library: 'wpigui', linkage: 'static'
-//                 lib project: ':thirdparty:imgui_suite', library: 'imguiSuite', linkage: 'static'
-//                 lib project: ':wpiutil', library: 'wpiutil', linkage: 'static'
-//                 nativeUtils.useRequiredLibrary(it, 'ceres')
-//                 nativeUtils.useRequiredLibrary(it, 'opencv_static')
-//                 it.cppCompiler.define 'OPENCV_DISABLE_EIGEN_TENSOR_SUPPORT'
-//                 it.cppCompiler.define('PROJECT_ROOT_PATH', testResources)
-//                 it.cppCompiler.define 'GLOG_USE_GLOG_EXPORT'
-//                 if (it.targetPlatform.name == nativeUtils.wpi.platforms.windowsarm64) {
-//                     // https://developercommunity.visualstudio.com/t/-imp-std-init-once-complete-unresolved-external-sy/1684365#T-N10041864
-//                     it.linker.args << '/alternatename:__imp___std_init_once_complete=__imp_InitOnceComplete'
-//                     it.linker.args << '/alternatename:__imp___std_init_once_begin_initialize=__imp_InitOnceBeginInitialize'
-//                 }
-//                 if (it.targetPlatform.operatingSystem.isWindows()) {
-//                     it.cppCompiler.define('GLOG_DEPRECATED', '__declspec(deprecated)')
-//                 } else {
-//                     it.cppCompiler.define('GLOG_DEPRECATED', '[[deprecated]]')
-//                 }
-//                 lib project: ':thirdparty:catch2', library: 'catch2', linkage: 'static'
-//                 it.cppCompiler.define("RUNNING_WPICAL_TESTS")
-//                 if (it.targetPlatform.operatingSystem.isWindows()) {
-//                     it.linker.args << 'Gdi32.lib' << 'Shell32.lib' << 'd3d11.lib' << 'd3dcompiler.lib'
-//                     // Comdlg32.lib is needed for GetSaveFileNameA
-//                     // dbghelp.lib is needed for glog functions
-//                     // advapi32.lib is needed for __imp_RegDeleteKeyA and other __imp_Reg functions for icvLoadWindowPos and the save variant
-//                     it.linker.args << 'advapi32.lib' << 'Comdlg32.lib' << 'dbghelp.lib'
-//                 } else if (it.targetPlatform.operatingSystem.isMacOsX()) {
-//                     it.linker.args << '-framework' << 'Metal' << '-framework' << 'MetalKit' << '-framework' << 'Cocoa' << '-framework' << 'IOKit' << '-framework' << 'CoreFoundation' << '-framework' << 'CoreVideo' << '-framework' << 'QuartzCore' << '-framework' << 'Accelerate'
-//                 } else {
-//                     it.linker.args << '-lX11'
-//                     if (it.targetPlatform.name.startsWith('linuxarm')) {
-//                         it.linker.args << '-lGL'
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
+        it.cppCompiler.args.remove("-pedantic")
+        it.cppCompiler.args.remove("-permissive")
+        it.cppCompiler.args.add("-fpermissive")
+        it.cppCompiler.args.add("-Wno-deprecated-declarations")
+        it.cppCompiler.args.add("-Wno-deprecated-enum-enum-conversion")
+        it.cppCompiler.args.add("-Wno-missing-field-initializers")
+        it.cppCompiler.args.add("-Wno-sign-compare")
+        it.cppCompiler.args.add("-Wno-unused-function")
+        it.cppCompiler.args.add("-Wno-unused-variable")
+    }
+}
+def testResources = "\"$rootDir/tools/wpical/src/main/native/assets\"".replace("\\", "/")
+model {
+    components {
+        "${nativeName}"(NativeExecutableSpec) {
+            baseName = 'wpical'
+            sources {
+                cpp {
+                    source {
+                        srcDirs 'src/main/native/cpp', 'src/main/native/thirdparty/libdogleg/src', 'src/main/native/thirdparty/mrcal/src', 'src/main/native/thirdparty/mrcal_java/src', "$buildDir/generated/main/cpp", "$buildDir/generated/mainVersion/cpp"
+                        include '**/*.cpp'
+                    }
+                    exportedHeaders {
+                        srcDirs 'src/main/native/include', 'src/main/native/thirdparty/libdogleg/include', 'src/main/native/thirdparty/mrcal/generated', 'src/main/native/thirdparty/mrcal/include', 'src/main/native/thirdparty/mrcal/include/minimath', 'src/main/native/thirdparty/mrcal_java/include'
+                    }
+                }
+                c {
+                    source {
+                        srcDirs 'src/main/native/thirdparty/mrcal/src'
+                        include '**/*.c'
+                    }
+                    exportedHeaders {
+                        srcDirs 'src/main/native/include', 'src/main/native/thirdparty/libdogleg/include', 'src/main/native/thirdparty/mrcal/generated', 'src/main/native/thirdparty/mrcal/include', 'src/main/native/thirdparty/mrcal/include/minimath'
+                    }
+                }
+                if (OperatingSystem.current().isWindows()) {
+                    rc.source {
+                        srcDirs 'src/main/native/win'
+                        include '*.rc'
+                    }
+                }
+            }
+            binaries.all {
+                if (it.targetPlatform.name == nativeUtils.wpi.platforms.systemcore) {
+                    it.buildable = false
+                    return
+                }
+                lib project: ':apriltag', library: 'apriltag', linkage: 'static'
+                lib project: ':glass', library: 'glass', linkage: 'static'
+                lib project: ':fields', library: 'fields', linkage: 'static'
+                lib project: ':fields', library: 'fieldimages', linkage: 'static'
+                lib project: ':wpimath', library: 'wpimath', linkage: 'static'
+                lib project: ':wpigui', library: 'wpigui', linkage: 'static'
+                lib project: ':thirdparty:imgui_suite', library: 'imguiSuite', linkage: 'static'
+                lib project: ':wpiutil', library: 'wpiutil', linkage: 'static'
+                nativeUtils.useRequiredLibrary(it, 'ceres')
+                project.addLibSdlGpuDependency(it)
+                it.cppCompiler.define 'OPENCV_DISABLE_EIGEN_TENSOR_SUPPORT'
+                it.cppCompiler.define 'GLOG_USE_GLOG_EXPORT'
+                if (it.targetPlatform.operatingSystem.isWindows()) {
+                    it.cppCompiler.define('GLOG_DEPRECATED', '__declspec(deprecated)')
+                } else {
+                    it.cppCompiler.define('GLOG_DEPRECATED', '[[deprecated]]')
+                }
+                if (it.targetPlatform.operatingSystem.isWindows()) {
+                    // Comdlg32.lib is needed for GetSaveFileNameA
+                    // dbghelp.lib is needed for glog functions
+                    it.linker.args << 'Comdlg32.lib' << 'dbghelp.lib'
+                } else if (it.targetPlatform.operatingSystem.isMacOsX()) {
+                    it.linker.args << '-framework' << 'Accelerate'
+                }
+            }
+        }
+    }
+    testSuites {
+        "${nativeTestSuiteName}"(GoogleTestTestSuiteSpec) {
+            for(NativeComponentSpec c : $.components) {
+                if (c.name == nativeName) {
+                    testing c
+                    break
+                }
+            }
+            sources {
+                cpp {
+                    source {
+                        srcDirs 'src/test/native/cpp'
+                        include '**/*.cpp'
+                    }
+                    exportedHeaders {
+                        srcDirs 'src/test/native/include', 'src/main/native/cpp'
+                    }
+                }
+            }
+            binaries.all {
+                if (it.targetPlatform.name == nativeUtils.wpi.platforms.systemcore) {
+                    it.buildable = false
+                    return
+                }
+                lib project: ':apriltag', library: 'apriltag', linkage: 'static'
+                lib project: ':glass', library: 'glass', linkage: 'static'
+                lib project: ':fields', library: 'fields', linkage: 'static'
+                lib project: ':fields', library: 'fieldimages', linkage: 'static'
+                lib project: ':wpimath', library: 'wpimath', linkage: 'static'
+                lib project: ':wpigui', library: 'wpigui', linkage: 'static'
+                lib project: ':thirdparty:imgui_suite', library: 'imguiSuite', linkage: 'static'
+                lib project: ':wpiutil', library: 'wpiutil', linkage: 'static'
+                nativeUtils.useRequiredLibrary(it, 'ceres')
+                project.addLibSdlGpuDependency(it)
+                it.cppCompiler.define 'OPENCV_DISABLE_EIGEN_TENSOR_SUPPORT'
+                it.cppCompiler.define('PROJECT_ROOT_PATH', testResources)
+                it.cppCompiler.define 'GLOG_USE_GLOG_EXPORT'
+                if (it.targetPlatform.name == nativeUtils.wpi.platforms.windowsarm64) {
+                    // https://developercommunity.visualstudio.com/t/-imp-std-init-once-complete-unresolved-external-sy/1684365#T-N10041864
+                    it.linker.args << '/alternatename:__imp___std_init_once_complete=__imp_InitOnceComplete'
+                    it.linker.args << '/alternatename:__imp___std_init_once_begin_initialize=__imp_InitOnceBeginInitialize'
+                }
+                if (it.targetPlatform.operatingSystem.isWindows()) {
+                    it.cppCompiler.define('GLOG_DEPRECATED', '__declspec(deprecated)')
+                } else {
+                    it.cppCompiler.define('GLOG_DEPRECATED', '[[deprecated]]')
+                }
+                lib project: ':thirdparty:catch2', library: 'catch2', linkage: 'static'
+                it.cppCompiler.define("RUNNING_WPICAL_TESTS")
+                if (it.targetPlatform.operatingSystem.isWindows()) {
+                    // Comdlg32.lib is needed for GetSaveFileNameA
+                    // dbghelp.lib is needed for glog functions
+                    // advapi32.lib is needed for __imp_RegDeleteKeyA and other __imp_Reg functions for icvLoadWindowPos and the save variant
+                    it.linker.args << 'advapi32.lib' << 'Comdlg32.lib' << 'dbghelp.lib'
+                } else if (it.targetPlatform.operatingSystem.isMacOsX()) {
+                    it.linker.args << '-framework' << 'Accelerate' << '-framework' << 'AVFoundation' << '-framework' << 'CoreMedia'
+                }
+            }
+        }
+    }
+}
 
 // // apply from: 'publish.gradle'
