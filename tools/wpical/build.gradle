@@ -33,6 +33,7 @@ def wpilibVersionFileOutput = file("$buildDir/generated/mainVersion/cpp/WPILibVe
 
 apply from: "${rootDir}/shared/ceres.gradle"
 apply from: "${rootDir}/shared/opencv.gradle"
+apply from: "${rootDir}/shared/libsdlgpu.gradle"
 
 task generateCppVersion() {
     description = 'Generates the wpilib version class'
@@ -251,4 +252,4 @@ model {
     }
 }
 
-// // apply from: 'publish.gradle'
+apply from: 'publish.gradle'

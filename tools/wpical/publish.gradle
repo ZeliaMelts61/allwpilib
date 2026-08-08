@@ -76,7 +76,7 @@ model {
                                     }
                                 }
 
-//                                 inputs.property "HasDeveloperId", project.hasProperty("developerID")
+                                inputs.property "HasDeveloperId", project.hasProperty("developerID")
 
                                 doLast {
                                     if (project.hasProperty("developerID")) {
