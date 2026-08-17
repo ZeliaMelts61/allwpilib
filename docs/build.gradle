@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'java-library'
     id "org.ysb33r.doxygen" version "2.0.0"
 }
 
@@ -22,6 +23,7 @@ evaluationDependsOn(':wpiutil')
 evaluationDependsOn(':romiVendordep')
 evaluationDependsOn(':xrpVendordep')
 evaluationDependsOn(':datalog')
+evaluationDependsOn(':drivers')
 
 def baseArtifactIdCpp = 'documentation'
 def artifactGroupIdCpp = 'org.wpilib.wpilibc'
@@ -50,6 +52,7 @@ cppProjectZips.add(project(':wpiutil').cppHeadersZip)
 cppProjectZips.add(project(':romiVendordep').cppHeadersZip)
 cppProjectZips.add(project(':xrpVendordep').cppHeadersZip)
 cppProjectZips.add(project(':datalog').cppHeadersZip)
+cppProjectZips.add(project(':drivers').cppHeadersZip)
 
 doxygen {
     // Doxygen binaries are only provided for x86_64 platforms. Other platforms
@@ -148,12 +151,14 @@ tasks.register("zipCppDocs", Zip) {
     into '/'
 }
 
-// Java
-configurations {
-    javaSource {
-        transitive = false
-    }
+ext {
+    useJava = true
+    useCpp = false
+    skipDev = true
 }
+
+// Classpath for everything + OpenCV
+apply from: "${rootDir}/shared/opencv.gradle"
 
 def javaDocProjects = [
     project(':apriltag'),
@@ -174,12 +179,15 @@ def javaDocProjects = [
     project(':romiVendordep'),
     project(':xrpVendordep'),
     project(':datalog'),
+    project(':drivers'),
 ]
 
+javaDocProjects.each {
+    dependencies.api it
+}
+
 tasks.register('generateJavaDocs', Javadoc) {
-    javaDocProjects.each {
-        classpath += it.sourceSets.main.compileClasspath
-    }
+    classpath = sourceSets.main.compileClasspath
     options.links("https://docs.oracle.com/en/java/javase/25/docs/api/")
     // workaround for opencv site blocking javadoc tool. If the link is changed,
     // docs/opencv/element-list must be redownloaded
@@ -227,7 +235,6 @@ tasks.register('generateJavaDocs', Javadoc) {
     javaDocProjects.each {
         source it.sourceSets.main.java
     }
-    source configurations.javaSource.collect { zipTree(it) }
     include '**/*.java'
     failOnError = true
 
