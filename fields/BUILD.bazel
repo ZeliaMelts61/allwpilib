@@ -20,10 +20,8 @@ FIELD_JSONS = glob(["src/main/native/resources/**/*.json"])
 FIELD_IMAGES = glob(
     [
         "src/main/native/resources/**/*.jpg",
-        "src/main/native/resources/**/*.jpeg",
         "src/main/native/resources/**/*.png",
     ],
-    allow_empty = True,
 )
 
 NO_SYSTEMCORE = select({
@@ -32,11 +30,16 @@ NO_SYSTEMCORE = select({
 })
 
 filegroup(
+    name = "generated-native-include-files",
+    srcs = glob(["src/generated/main/native/include/**/*"]),
+    visibility = ["//fields:__subpackages__"],
+)
+
+filegroup(
     name = "doxygen-files",
     srcs = glob([
-        "src/generated/main/native/include/**/*",
         "src/main/native/include/**/*",
-    ]),
+    ]) + [":generated-native-include-files"],
     visibility = ["//visibility:public"],
 )
 
@@ -161,6 +164,8 @@ wpilib_cc_library(
 wpilib_cc_shared_library(
     name = "shared/fields",
     dynamic_deps = [
+        "//telemetry:shared/telemetry",
+        "//tunables:shared/tunables",
         "//wpimath:shared/wpimath",
         "//wpiutil:shared/wpiutil",
     ],
@@ -192,6 +197,12 @@ wpilib_cc_library(
 
 wpilib_cc_static_library(
     name = "static/fields",
+    static_deps = [
+        "//telemetry:static/telemetry",
+        "//tunables:static/tunables",
+        "//wpimath:static/wpimath",
+        "//wpiutil:static/wpiutil",
+    ],
     static_lib_name = select({
         "@platforms//os:windows": "static/fields.lib",
         "//conditions:default": "static/libfields.a",
@@ -297,6 +308,7 @@ package_default_cc_project(
 
 generate_robotpy_native_wrapper_build_info(
     name = "robotpy-native-fields-generator",
+    generated_include_target = "//fields:generated-native-include-files",
     pyproject_toml = "src/main/python/native-pyproject.toml",
 )
 
@@ -307,6 +319,10 @@ define_native_wrapper(
 
 PYBIND_PKGCFG_DEPS = [
     "//fields:native/fields/robotpy-native-fields.pc",
+    "//telemetry:native/telemetry/robotpy-native-telemetry.pc",
+    "//telemetry:robotpy-telemetry.generated_pkgcfg_files",
+    "//tunables:native/tunables/robotpy-native-tunables.pc",
+    "//tunables:robotpy-tunables.generated_pkgcfg_files",
     "//wpimath:native/wpimath/robotpy-native-wpimath.pc",
     "//wpimath:robotpy-wpimath.generated_pkgcfg_files",
     "//wpiutil:native/wpiutil/robotpy-native-wpiutil.pc",
