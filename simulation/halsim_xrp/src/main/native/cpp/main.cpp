@@ -34,7 +34,8 @@ int HALSIM_InitExtension(void) {
     return -1;
   }
 
-  std::puts("HALSim XRP Extension Initialized");
+  std::puts("Custom halsim_xrp.dll loaded!");
+  // std::puts("HALSim XRP Extension Initialized");
   return 0;
 }
 

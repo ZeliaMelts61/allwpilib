@@ -10,6 +10,7 @@
 
 #include "wpi/util/Endian.hpp"
 #include "wpi/util/json.hpp"
+#include <cstdio>
 
 using namespace wpilibxrp;
 
@@ -104,6 +105,7 @@ void XRP::SetupXRPSendBuffer(wpi::net::raw_uv_ostream& buf) {
   SetupMotorTag(buf);
   SetupServoTag(buf);
   SetupDigitalOutTag(buf);
+  SetupLedTag(buf);
   m_xrp_bound_seq++;
 }
 
@@ -325,6 +327,27 @@ void XRP::SetupDigitalOutTag(wpi::net::raw_uv_ostream& buf) {
   }
 }
 
+void XRP::SetupLedTag(wpi::net::raw_uv_ostream& buf) {
+  int start = HALSIM_GetAddressableLEDStart(5);
+  int count = HALSIM_GetAddressableLEDLength(5);
+  if (count <= 0) {
+    return;
+  }
+
+  std::vector<HAL_AddressableLEDData> leds(count);
+  
+  
+  HALSIM_GetAddressableLEDData(start, count, leds.data());
+  std::string buf2 = ""; 
+  buf << static_cast<uint8_t>(2 + count * 3)  // Size
+      << static_cast<uint8_t>(XRP_TAG_LED)    // Tag
+      << static_cast<uint8_t>(count);         // Number of leds
+
+  for (const auto& led : leds) {
+    buf << led.r << led.g << led.b;           // Led buffer
+  }
+}
+
 void XRP::ReadGyroTag(std::span<const uint8_t> packet) {
   if (packet.size() < 26) {
     return;  // size(1) + tag(1) + 6x 4byte
@@ -399,7 +422,7 @@ void XRP::ReadEncoderTag(std::span<const uint8_t> packet) {
   wpi::util::json encJson;
   encJson["type"] = "Encoder";
   encJson["device"] = std::to_string(wpilibEncoderChannel);
-  encJson["data"] = wpi::util::json::object(">count", count);
+  encJson["data"][">count"] = count;
 
   if (containsPeriod) {
     // Older versions of XRP firmware do not provide Encoder Period.
@@ -426,7 +449,7 @@ void XRP::ReadEncoderTag(std::span<const uint8_t> packet) {
       period = -period;
     }
 
-    encJson["data"].emplace_back(wpi::util::json::object(">period", period));
+    encJson["data"][">period"] = period;
   }
 
   m_wpilib_update_func(encJson);

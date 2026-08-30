@@ -29,6 +29,7 @@ plugins {
     alias(libs.plugins.lint.spotless) apply false
 }
 
+
 wpilibVersioning.buildServerMode = project.hasProperty('buildServer')
 wpilibVersioning.releaseMode = project.hasProperty('releaseMode')
 
